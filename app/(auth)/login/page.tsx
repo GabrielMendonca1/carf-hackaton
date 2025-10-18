@@ -4,7 +4,13 @@ import Form from "next/form";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Suspense, useActionState, useEffect, useState } from "react";
+import {
+  Suspense,
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { toast } from "@/components/toast";
 import { cn } from "@/lib/utils";
@@ -31,8 +37,11 @@ export default function Page() {
 function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirectUrl");
   const [email, setEmail] = useState("");
   const [isSuccessful, setIsSuccessful] = useState(false);
+  const hasRedirectedRef = useRef(false);
+  const [redirectTarget, setRedirectTarget] = useState<string | null>(null);
 
   const [state, formAction] = useActionState<LoginActionState, FormData>(login, {
     status: "idle",
@@ -51,25 +60,54 @@ function LoginPage() {
         type: "error",
         description: "Verifique os dados informados e tente novamente.",
       });
-    } else if (state.status === "success") {
-      setIsSuccessful(true);
-      void (async () => {
-        await updateSession();
-
-        const redirectParam = searchParams.get("redirectUrl");
-        if (redirectParam) {
-          try {
-            router.push(decodeURIComponent(redirectParam));
-            return;
-          } catch (error) {
-            console.error("Failed to decode redirect URL:", error);
-          }
-        }
-
-        router.push("/chat");
-      })();
     }
-  }, [state.status, updateSession, router, searchParams]);
+  }, [state.status]);
+
+  useEffect(() => {
+    if (!redirectUrl) {
+      setRedirectTarget(null);
+      return;
+    }
+
+    try {
+      const decodedRedirectUrl = decodeURIComponent(redirectUrl);
+      const url = new URL(decodedRedirectUrl, window.location.origin);
+      const isSameOrigin = url.origin === window.location.origin;
+      const hasFileExtension = /\.[^/]+$/.test(url.pathname);
+      const isAuthRoute =
+        url.pathname.startsWith("/login") || url.pathname.startsWith("/register");
+
+      if (isSameOrigin && !hasFileExtension && !isAuthRoute) {
+        setRedirectTarget(
+          `${url.pathname}${url.search}${url.hash}` || "/chat"
+        );
+        return;
+      }
+    } catch (error) {
+      console.error("Invalid redirectUrl provided:", error);
+    }
+
+    setRedirectTarget(null);
+  }, [redirectUrl]);
+
+  useEffect(() => {
+    if (state.status !== "success" || hasRedirectedRef.current) {
+      if (state.status !== "success") {
+        hasRedirectedRef.current = false;
+      }
+      return;
+    }
+
+    hasRedirectedRef.current = true;
+    setIsSuccessful(true);
+
+    void (async () => {
+      await updateSession();
+
+      const destination = redirectTarget ?? "/chat";
+      router.push(destination);
+    })();
+  }, [state.status, updateSession, router, redirectTarget]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);

@@ -25,6 +25,7 @@ import { ptBR } from "date-fns/locale";
 interface ConsultarTableProps {
   processos: Processo[];
   onProcessoClick?: (processo: Processo) => void;
+  compactMode?: boolean;
 }
 
 type SortField =
@@ -40,6 +41,7 @@ type SortDirection = "asc" | "desc";
 export function ConsultarTable({
   processos,
   onProcessoClick,
+  compactMode = false,
 }: ConsultarTableProps) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [sortField, setSortField] = useState<SortField>("prazo");
@@ -126,7 +128,7 @@ export function ConsultarTable({
   );
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="border rounded-lg overflow-hidden animate-in fade-in duration-300">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-muted/50 border-b">
@@ -176,12 +178,13 @@ export function ConsultarTable({
                   <tr
                     key={processo.id}
                     className={cn(
-                      "hover:bg-muted/30 transition-colors cursor-pointer",
-                      isExpanded && "bg-muted/20"
+                      "hover:bg-muted/30 transition-all cursor-pointer group",
+                      isExpanded && "bg-muted/20",
+                      "hover:shadow-sm"
                     )}
                     onClick={() => toggleRowExpansion(processo.id)}
                   >
-                    <td className="px-4 py-3 text-center">
+                    <td className={cn("px-4 text-center", compactMode ? "py-2" : "py-3")}>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -198,30 +201,34 @@ export function ConsultarTable({
                         )}
                       </Button>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className={cn("px-4", compactMode ? "py-2" : "py-3")}>
                       <div className="flex flex-col gap-1">
-                        <span className="font-semibold text-sm">
+                        <span className={cn("font-semibold", compactMode ? "text-xs" : "text-sm")}>
                           {processo.numeroProcesso}
                         </span>
-                        <span className="text-xs text-muted-foreground line-clamp-1">
-                          {processo.descricaoResumida}
-                        </span>
+                        {!compactMode && (
+                          <span className="text-xs text-muted-foreground line-clamp-1">
+                            {processo.descricaoResumida}
+                          </span>
+                        )}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      {processo.tema && <TemaBadge tema={processo.tema} />}
+                    <td className={cn("px-4", compactMode ? "py-2" : "py-3")}>
+                      {processo.tema && <TemaBadge tema={processo.tema} size={compactMode ? "sm" : "md"} />}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className={cn("px-4", compactMode ? "py-2" : "py-3")}>
                       <div className="flex flex-col gap-1">
-                        <span className="text-sm font-medium">
+                        <span className={cn("font-medium", compactMode ? "text-xs" : "text-sm")}>
                           {processo.turma || "N/A"}
                         </span>
-                        <span className="text-xs text-muted-foreground">
-                          {processo.setorResponsavel}
-                        </span>
+                        {!compactMode && (
+                          <span className="text-xs text-muted-foreground">
+                            {processo.setorResponsavel}
+                          </span>
+                        )}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className={cn("px-4", compactMode ? "py-2" : "py-3")}>
                       {processo.servidorAtual ? (
                         <div className="flex flex-col gap-1">
                           <span className="text-sm font-medium">
