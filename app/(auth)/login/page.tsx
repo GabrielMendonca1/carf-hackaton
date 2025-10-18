@@ -4,7 +4,7 @@ import Form from "next/form";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useActionState, useEffect, useState } from "react";
+import { Suspense, useActionState, useEffect, useState } from "react";
 
 import { toast } from "@/components/toast";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,14 @@ import {
 import { type LoginActionState, login } from "../actions";
 
 export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPage />
+    </Suspense>
+  );
+}
+
+function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
