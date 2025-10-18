@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
@@ -55,6 +55,7 @@ export function Chat({
     initialVisibilityType,
   });
 
+  const router = useRouter();
   const { mutate } = useSWRConfig();
   const { setDataStream } = useDataStream();
 
@@ -106,6 +107,8 @@ export function Chat({
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
+      router.replace("/");
+
       if (error instanceof ChatSDKError) {
         // Check if it's a credit card error
         if (

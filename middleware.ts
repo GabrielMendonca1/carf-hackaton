@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { guestRegex, isDevelopmentEnvironment } from "./lib/constants";
+import { isDevelopmentEnvironment } from "./lib/constants";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -23,17 +23,24 @@ export async function middleware(request: NextRequest) {
     secureCookie: !isDevelopmentEnvironment,
   });
 
+  const isAuthPath =
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname.startsWith("/register/");
+
   if (!token) {
+    if (isAuthPath) {
+      return NextResponse.next();
+    }
+
     const redirectUrl = encodeURIComponent(request.url);
 
     return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url)
+      new URL(`/login?redirectUrl=${redirectUrl}`, request.url)
     );
   }
 
-  const isGuest = guestRegex.test(token?.email ?? "");
-
-  if (token && !isGuest && ["/login", "/register"].includes(pathname)) {
+  if (token && isAuthPath) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
@@ -47,6 +54,7 @@ export const config = {
     "/api/:path*",
     "/login",
     "/register",
+    "/register/:path*",
 
     /*
      * Match all request paths except for the ones starting with:

@@ -11,6 +11,14 @@ const authFormSchema = z.object({
   password: z.string().min(6),
 });
 
+const registerFormSchema = authFormSchema.extend({
+  firstName: z.string().min(2),
+  lastName: z.string().min(2),
+  cpf: z.string().regex(/^\d{11}$/),
+  areaOfExpertise: z.enum(["1", "2", "3", "4"]),
+  role: z.string().min(2),
+});
+
 export type LoginActionState = {
   status: "idle" | "in_progress" | "success" | "failed" | "invalid_data";
 };
@@ -56,9 +64,14 @@ export const register = async (
   formData: FormData
 ): Promise<RegisterActionState> => {
   try {
-    const validatedData = authFormSchema.parse({
+    const validatedData = registerFormSchema.parse({
       email: formData.get("email"),
       password: formData.get("password"),
+      firstName: formData.get("firstName"),
+      lastName: formData.get("lastName"),
+      cpf: formData.get("cpf"),
+      areaOfExpertise: formData.get("areaOfExpertise"),
+      role: formData.get("role"),
     });
 
     const [user] = await getUser(validatedData.email);
@@ -66,7 +79,17 @@ export const register = async (
     if (user) {
       return { status: "user_exists" } as RegisterActionState;
     }
-    await createUser(validatedData.email, validatedData.password);
+    await createUser({
+      email: validatedData.email,
+      password: validatedData.password,
+      profile: {
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        cpf: validatedData.cpf,
+        areaOfExpertise: validatedData.areaOfExpertise,
+        role: validatedData.role,
+      },
+    });
     await signIn("credentials", {
       email: validatedData.email,
       password: validatedData.password,

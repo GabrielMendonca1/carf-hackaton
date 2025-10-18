@@ -12,11 +12,13 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import type { AppUsage } from "../usage";
+import type { UserProfile } from "../types/user";
 
 export const user = pgTable("User", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   email: varchar("email", { length: 64 }).notNull(),
   password: varchar("password", { length: 64 }),
+  profile: jsonb("profile").$type<UserProfile | null>(),
 });
 
 export type User = InferSelectModel<typeof user>;

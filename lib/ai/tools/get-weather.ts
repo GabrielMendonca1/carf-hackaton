@@ -59,11 +59,11 @@ export const getWeather = tool({
     );
 
     const weatherData = await response.json();
-    
+
     if ("city" in input) {
       weatherData.cityName = input.city;
     }
-    
+
     return weatherData;
   },
 });
