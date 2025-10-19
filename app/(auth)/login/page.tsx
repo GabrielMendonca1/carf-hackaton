@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import {
   Suspense,
   useActionState,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -38,21 +39,24 @@ function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirectUrl");
-  const [email, setEmail] = useState("");
-  const [isSuccessful, setIsSuccessful] = useState(false);
   const hasRedirectedRef = useRef(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [redirectTarget, setRedirectTarget] = useState<string | null>(null);
 
-  const [state, formAction] = useActionState<
-    LoginActionState | undefined,
-    FormData
-  >(login, {
+  const [state, formAction, isPending] = useActionState<LoginActionState, FormData>(login, {
     status: "idle",
+    email: "",
   });
 
-  const status = state?.status ?? "idle";
+  const [email, setEmail] = useState(state.email);
+
+  const status = state.status;
 
   const { update: updateSession } = useSession();
+
+  useEffect(() => {
+    setEmail(state.email);
+  }, [state.email]);
 
   useEffect(() => {
     if (status === "failed") {
@@ -96,29 +100,40 @@ function LoginPage() {
   }, [redirectUrl]);
 
   useEffect(() => {
-    if (status !== "success" || hasRedirectedRef.current) {
-      if (status !== "success") {
-        hasRedirectedRef.current = false;
-        setIsSuccessful(false);
-      }
+    if (status !== "success") {
+      hasRedirectedRef.current = false;
+      setIsRedirecting(false);
+      return;
+    }
+
+    if (hasRedirectedRef.current) {
       return;
     }
 
     hasRedirectedRef.current = true;
-    setIsSuccessful(true);
+    setIsRedirecting(true);
 
     void (async () => {
-      await updateSession();
+      try {
+        await updateSession();
+      } catch (error) {
+        console.error("Failed to refresh session after login:", error);
+      }
 
-      const destination = redirectTarget ?? "/chat";
-      router.push(destination);
+      router.push(redirectTarget ?? "/chat");
     })();
   }, [status, updateSession, router, redirectTarget]);
 
-  const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get("email") as string);
-    formAction(formData);
-  };
+  const handleSubmit = useCallback(
+    (formData: FormData) => {
+      const emailValue = formData.get("email");
+      setEmail(typeof emailValue === "string" ? emailValue : "");
+      return formAction(formData);
+    },
+    [formAction]
+  );
+
+  const isSubmitting = isPending || isRedirecting;
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">
@@ -146,7 +161,8 @@ function LoginPage() {
                     name="email"
                     type="email"
                     placeholder="voce@empresa.com"
-                    defaultValue={email}
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
                     autoComplete="email"
                     autoFocus
                     required
@@ -167,9 +183,9 @@ function LoginPage() {
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={isSuccessful}
+                    disabled={isSubmitting}
                   >
-                    {isSuccessful ? "Entrando..." : "Entrar"}
+                    {isSubmitting ? "Entrando..." : "Entrar"}
                   </Button>
                 </Field>
 

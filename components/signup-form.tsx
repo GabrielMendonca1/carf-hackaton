@@ -15,8 +15,10 @@ import {
 
 interface SignupFormProps {
   action: string | ((formData: FormData) => void | Promise<void>);
-  defaultEmail?: string;
+  email: string;
+  onEmailChange: (value: string) => void;
   isSuccessful?: boolean;
+  isSubmitting?: boolean;
   firstName?: string;
   lastName?: string;
   cpf?: string;
@@ -26,8 +28,10 @@ interface SignupFormProps {
 
 export function SignupForm({
   action,
-  defaultEmail = "",
+  email,
+  onEmailChange,
   isSuccessful = false,
+  isSubmitting = false,
   firstName = "",
   lastName = "",
   cpf = "",
@@ -60,7 +64,8 @@ export function SignupForm({
                   name="email"
                   type="email"
                   placeholder="voce@empresa.com"
-                  defaultValue={defaultEmail}
+                  value={email}
+                  onChange={(event) => onEmailChange(event.target.value)}
                   autoComplete="email"
                   required
                 />
@@ -78,7 +83,11 @@ export function SignupForm({
               </Field>
 
               <Field>
-                <Button type="submit" className="w-full" disabled={isSuccessful}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSuccessful || isSubmitting}
+                >
                   {isSuccessful ? "Criando conta..." : "Criar conta"}
                 </Button>
               </Field>

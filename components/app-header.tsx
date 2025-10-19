@@ -65,7 +65,7 @@ export function AppHeader() {
       </div>
       <header
         className={cn(
-          "sticky top-0 z-10 hidden items-center gap-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-2 py-2 md:flex md:px-4 transition-transform duration-300",
+          "sticky top-0 z-10 hidden items-center gap-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter:blur(0)]:bg-background/60 px-2 py-2 md:flex md:px-4 transition-transform duration-300",
           !isVisible && "-translate-y-full"
         )}
       >

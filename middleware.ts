@@ -37,7 +37,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    const redirectUrl = encodeURIComponent(request.url);
+    const redirectDestination =
+      `${request.nextUrl.pathname}${request.nextUrl.search}${request.nextUrl.hash}` || "/";
+    const redirectUrl = encodeURIComponent(redirectDestination);
 
     return NextResponse.redirect(
       new URL(`/login?redirectUrl=${redirectUrl}`, request.url)

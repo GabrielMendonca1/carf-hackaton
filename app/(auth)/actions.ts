@@ -21,17 +21,30 @@ const registerFormSchema = authFormSchema.extend({
 
 export type LoginActionState = {
   status: "idle" | "in_progress" | "success" | "failed" | "invalid_data";
+  email: string;
 };
 
 export const login = async (
-  _: LoginActionState | undefined,
+  _: LoginActionState,
   formData: FormData
 ): Promise<LoginActionState> => {
+  const rawEmail = formData.get("email");
+  const rawPassword = formData.get("password");
+
+  const email = typeof rawEmail === "string" ? rawEmail : "";
+  const password = typeof rawPassword === "string" ? rawPassword : "";
+
   try {
-    const validatedData = authFormSchema.parse({
-      email: formData.get("email"),
-      password: formData.get("password"),
+    const parsedData = authFormSchema.safeParse({
+      email,
+      password,
     });
+
+    if (!parsedData.success) {
+      return { status: "invalid_data", email };
+    }
+
+    const validatedData = parsedData.data;
 
     const result = await signIn("credentials", {
       email: validatedData.email,
@@ -39,17 +52,21 @@ export const login = async (
       redirect: false,
     });
 
-    if (!result?.ok) {
-      return { status: "failed" };
+    if (result && !result.ok) {
+      return { status: "failed", email: validatedData.email };
     }
 
-    return { status: "success" };
+    if (result?.error) {
+      return { status: "failed", email: validatedData.email };
+    }
+
+    return { status: "success", email: validatedData.email };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { status: "invalid_data" };
+      return { status: "invalid_data", email };
     }
 
-    return { status: "failed" };
+    return { status: "failed", email };
   }
 };
 
@@ -61,15 +78,19 @@ export type RegisterActionState = {
     | "failed"
     | "user_exists"
     | "invalid_data";
+  email: string;
 };
 
 export const register = async (
   _: RegisterActionState,
   formData: FormData
 ): Promise<RegisterActionState> => {
+  const rawEmail = formData.get("email");
+  const email = typeof rawEmail === "string" ? rawEmail : "";
+
   try {
-    const validatedData = registerFormSchema.parse({
-      email: formData.get("email"),
+    const parsedData = registerFormSchema.safeParse({
+      email,
       password: formData.get("password"),
       firstName: formData.get("firstName"),
       lastName: formData.get("lastName"),
@@ -78,10 +99,16 @@ export const register = async (
       role: formData.get("role"),
     });
 
+    if (!parsedData.success) {
+      return { status: "invalid_data", email };
+    }
+
+    const validatedData = parsedData.data;
+
     const [user] = await getUser(validatedData.email);
 
     if (user) {
-      return { status: "user_exists" } as RegisterActionState;
+      return { status: "user_exists", email: validatedData.email };
     }
     await createUser({
       email: validatedData.email,
@@ -100,12 +127,12 @@ export const register = async (
       redirect: false,
     });
 
-    return { status: "success" };
+    return { status: "success", email: validatedData.email };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { status: "invalid_data" };
+      return { status: "invalid_data", email };
     }
 
-    return { status: "failed" };
+    return { status: "failed", email };
   }
 };

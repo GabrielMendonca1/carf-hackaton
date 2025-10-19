@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useCallback, useEffect, useState } from "react";
 import { SignupForm } from "@/components/signup-form";
 import { toast } from "@/components/toast";
 import type { OnboardingProfile } from "../onboarding-config";
@@ -20,14 +20,18 @@ export default function RegisterForm({
 }) {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
-  const [isSuccessful, setIsSuccessful] = useState(false);
-
-  const [state, formAction] = useActionState<RegisterActionState, FormData>(register, {
+  const [state, formAction, isPending] = useActionState<RegisterActionState, FormData>(register, {
     status: "idle",
+    email: "",
   });
 
+  const [email, setEmail] = useState(state.email);
+
   const { update: updateSession } = useSession();
+
+  useEffect(() => {
+    setEmail(state.email);
+  }, [state.email]);
 
   useEffect(() => {
     if (state.status === "user_exists") {
@@ -42,7 +46,6 @@ export default function RegisterForm({
     } else if (state.status === "success") {
       toast({ type: "success", description: "Conta criada com sucesso!" });
 
-      setIsSuccessful(true);
       void (async () => {
         try {
           await clearOnboardingFlag();
@@ -55,10 +58,17 @@ export default function RegisterForm({
     }
   }, [state.status, updateSession, router]);
 
-  const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get("email") as string);
-    formAction(formData);
-  };
+  const handleSubmit = useCallback(
+    (formData: FormData) => {
+      const emailValue = formData.get("email");
+      setEmail(typeof emailValue === "string" ? emailValue : "");
+      return formAction(formData);
+    },
+    [formAction]
+  );
+
+  const isSuccessful = state.status === "success";
+  const isSubmitting = isPending || isSuccessful;
 
   const profile = defaultProfile ?? {
     firstName: "",
@@ -114,8 +124,10 @@ export default function RegisterForm({
         </div>
         <SignupForm
           action={handleSubmit}
-          defaultEmail={email}
+          email={email}
+          onEmailChange={setEmail}
           isSuccessful={isSuccessful}
+          isSubmitting={isSubmitting}
           firstName={profile.firstName}
           lastName={profile.lastName}
           cpf={profile.cpf}
