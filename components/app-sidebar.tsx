@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { User } from "next-auth";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
 import { PlusIcon, TrashIcon } from "@/components/icons";
+import { navigationItems } from "@/components/app-header";
 import { SidebarHistory, getChatHistoryPaginationKey } from "@/components/sidebar-history";
 import { SidebarUserNav } from "@/components/sidebar-user-nav";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
+  SidebarMenuButton,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -31,8 +33,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
+import { Badge } from "./ui/badge";
 
 export function AppSidebar({ user }: { user: User | undefined }) {
+  const pathname = usePathname();
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
   const { mutate } = useSWRConfig();
@@ -111,6 +115,39 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 </Tooltip>
               </div>
             </div>
+          </SidebarMenu>
+          <SidebarMenu className="md:hidden">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    onClick={() => {
+                      setOpenMobile(false);
+                    }}
+                  >
+                    <Link className="flex items-center gap-2" href={item.href}>
+                      <Icon className="h-4 w-4" />
+                      <span className="flex-1 truncate text-sm font-medium">
+                        {item.label}
+                      </span>
+                      {item.badge && (
+                        <Badge
+                          className="ml-auto text-xs"
+                          variant={isActive ? "secondary" : "outline"}
+                        >
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
