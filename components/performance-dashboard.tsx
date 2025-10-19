@@ -471,7 +471,7 @@ export function PerformanceDashboard() {
               {topPerformers.map((servidor, index) => (
                 <div
                   key={servidor.nome}
-                  className="flex items-start justify-between rounded-lg border p-3"
+                  className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-start sm:justify-between"
                 >
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2 font-medium">
@@ -489,7 +489,7 @@ export function PerformanceDashboard() {
                       ))}
                     </div>
                   </div>
-                  <div className="text-right text-xs">
+                  <div className="flex flex-col gap-1 text-xs text-foreground sm:items-end sm:text-right">
                     <div className="font-medium text-foreground">
                       {servidor.processos} processos
                     </div>
@@ -741,66 +741,68 @@ export function PerformanceDashboard() {
           <CardContent className="space-y-4">
             <div className="rounded-lg border">
               <ScrollArea className="h-[280px]">
-                <table className="w-full min-w-max text-sm">
-                  <thead className="sticky top-0 z-10 bg-background/95 backdrop-blur">
-                    <tr className="text-left text-xs uppercase text-muted-foreground">
-                      <th className="px-4 py-3 font-medium">Servidor</th>
-                      <th className="px-4 py-3 font-medium">Processos</th>
-                      <th className="px-4 py-3 font-medium">Tempo médio</th>
-                      <th className="px-4 py-3 font-medium">Feedback</th>
-                      <th className="px-4 py-3 font-medium">Habilidades</th>
-                      <th className="px-4 py-3 font-medium">Alertas</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {employees.map((servidor) => (
-                      <tr key={servidor.nome} className="align-top">
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-foreground">{servidor.nome}</div>
-                          <div className="text-xs text-muted-foreground">{servidor.unidade}</div>
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {servidor.processos}
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {servidor.tempoMedio} dias
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {servidor.feedback.toFixed(1)} / 5
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-wrap gap-1">
-                            {servidor.habilidades.map((tag) => (
-                              <Badge key={tag} variant="outline" className="text-[10px]">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="space-y-2">
-                            {servidor.alertas.length === 0 && (
-                              <Badge variant="secondary" className="text-[10px]">
-                                Nenhum alerta
-                              </Badge>
-                            )}
-                            {servidor.alertas.map((alerta) => (
-                              <div
-                                key={alerta.descricao}
-                                className="rounded-md border bg-muted/40 p-2 text-xs text-muted-foreground"
-                              >
-                                <span className="font-medium text-foreground">
-                                  {alerta.tipo}
-                                </span>
-                                <p>{alerta.descricao}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </td>
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full min-w-[640px] text-sm">
+                    <thead className="sticky top-0 z-10 bg-background/95 backdrop-blur">
+                      <tr className="text-left text-xs uppercase text-muted-foreground">
+                        <th className="px-4 py-3 font-medium whitespace-nowrap">Servidor</th>
+                        <th className="px-4 py-3 font-medium whitespace-nowrap">Processos</th>
+                        <th className="px-4 py-3 font-medium whitespace-nowrap">Tempo médio</th>
+                        <th className="px-4 py-3 font-medium whitespace-nowrap">Feedback</th>
+                        <th className="px-4 py-3 font-medium whitespace-nowrap">Habilidades</th>
+                        <th className="px-4 py-3 font-medium whitespace-nowrap">Alertas</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y">
+                      {employees.map((servidor) => (
+                        <tr key={servidor.nome} className="align-top">
+                          <td className="px-4 py-3">
+                            <div className="font-medium text-foreground">{servidor.nome}</div>
+                            <div className="text-xs text-muted-foreground">{servidor.unidade}</div>
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                            {servidor.processos}
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                            {servidor.tempoMedio} dias
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                            {servidor.feedback.toFixed(1)} / 5
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-wrap gap-1">
+                              {servidor.habilidades.map((tag) => (
+                                <Badge key={tag} variant="outline" className="text-[10px]">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="space-y-2">
+                              {servidor.alertas.length === 0 && (
+                                <Badge variant="secondary" className="text-[10px]">
+                                  Nenhum alerta
+                                </Badge>
+                              )}
+                              {servidor.alertas.map((alerta) => (
+                                <div
+                                  key={alerta.descricao}
+                                  className="rounded-md border bg-muted/40 p-2 text-xs text-muted-foreground"
+                                >
+                                  <span className="font-medium text-foreground">
+                                    {alerta.tipo}
+                                  </span>
+                                  <p>{alerta.descricao}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </ScrollArea>
             </div>
             <p className="text-xs text-muted-foreground">
@@ -823,15 +825,15 @@ export function PerformanceDashboard() {
                   key={evento.titulo}
                   className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground"
                 >
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center justify-between text-sm font-medium text-foreground">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 text-sm font-medium text-foreground sm:flex-row sm:items-center sm:justify-between">
                       {evento.titulo}
                       <Badge variant="outline" className="text-[10px]">
                         {evento.status}
                       </Badge>
                     </div>
-                    <p>{evento.motivo}</p>
-                    <div className="flex flex-wrap gap-3 pt-1">
+                    <p className="leading-relaxed text-muted-foreground">{evento.motivo}</p>
+                    <div className="flex flex-col gap-1 pt-1 text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
                       <span>{evento.data}</span>
                       <span>{evento.responsavel}</span>
                     </div>
@@ -849,21 +851,21 @@ export function PerformanceDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-xs text-muted-foreground">
-              <div className="flex items-start gap-2">
+              <div className="flex gap-3">
                 <ArrowUpRight className="mt-1 h-3 w-3 text-emerald-600" />
-                <p>
+                <p className="leading-relaxed">
                   Incorporar boas práticas da Turma 01 ao manual de processos — ganho médio de 18 dias.
                 </p>
               </div>
-              <div className="flex items-start gap-2">
+              <div className="flex gap-3">
                 <ArrowRight className="mt-1 h-3 w-3 text-primary" />
-                <p>
+                <p className="leading-relaxed">
                   Criar trilha de reciclagem em complexidade alta com foco em perícia e pareceres.
                 </p>
               </div>
-              <div className="flex items-start gap-2">
+              <div className="flex gap-3">
                 <ArrowDownRight className="mt-1 h-3 w-3 text-rose-500" />
-                <p>
+                <p className="leading-relaxed">
                   Monitorar redistribuições acima de 20 dias com cooperação ativa — potencial gargalo logístico.
                 </p>
               </div>
