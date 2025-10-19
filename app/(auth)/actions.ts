@@ -22,6 +22,35 @@ const registerFormSchema = authFormSchema.extend({
 export type LoginActionState = {
   status: "idle" | "in_progress" | "success" | "failed" | "invalid_data";
   email: string;
+  redirectTo: string;
+};
+
+const sanitizeRedirect = (rawRedirect: unknown) => {
+  if (typeof rawRedirect !== "string" || rawRedirect.length === 0) {
+    return "/";
+  }
+
+  try {
+    const decoded = decodeURIComponent(rawRedirect);
+    if (!decoded.startsWith("/") || decoded.startsWith("//")) {
+      return "/";
+    }
+
+    if (
+      decoded.startsWith("/login") ||
+      decoded.startsWith("/register")
+    ) {
+      return "/";
+    }
+
+    if (/\.[^/]+$/.test(decoded.split("?")[0] ?? "")) {
+      return "/";
+    }
+
+    return decoded || "/";
+  } catch {
+    return "/";
+  }
 };
 
 export const login = async (
@@ -30,9 +59,17 @@ export const login = async (
 ): Promise<LoginActionState> => {
   const rawEmail = formData.get("email");
   const rawPassword = formData.get("password");
+  const rawRedirect = formData.get("redirectUrl");
 
   const email = typeof rawEmail === "string" ? rawEmail : "";
   const password = typeof rawPassword === "string" ? rawPassword : "";
+  const redirectTo = sanitizeRedirect(rawRedirect);
+
+  console.info("[login action] received submit", {
+    email,
+    hasPassword: password.length > 0,
+    redirectTo,
+  });
 
   try {
     const parsedData = authFormSchema.safeParse({
@@ -41,7 +78,11 @@ export const login = async (
     });
 
     if (!parsedData.success) {
-      return { status: "invalid_data", email };
+      console.warn("[login action] invalid form data", {
+        email,
+        issues: parsedData.error.issues,
+      });
+      return { status: "invalid_data", email, redirectTo };
     }
 
     const validatedData = parsedData.data;
@@ -52,21 +93,67 @@ export const login = async (
       redirect: false,
     });
 
-    if (result && !result.ok) {
-      return { status: "failed", email: validatedData.email };
+    console.info("[login action] signIn result", {
+      type: result ? result.constructor?.name ?? "object" : "nullish",
+      keys: result ? Object.keys(result) : null,
+      resultOk: (result as any)?.ok ?? null,
+      resultStatus: (result as any)?.status ?? null,
+      hasError: Boolean((result as any)?.error),
+      error: (result as any)?.error ?? null,
+    });
+
+    if ((result as any)?.error) {
+      console.warn("[login action] signIn returned error", {
+        email: validatedData.email,
+        error: (result as any).error,
+      });
+      return {
+        status: "failed",
+        email: validatedData.email,
+        redirectTo,
+      };
     }
 
-    if (result?.error) {
-      return { status: "failed", email: validatedData.email };
+    if ((result as any)?.ok === false) {
+      console.warn("[login action] credentials rejected by signIn", {
+        email: validatedData.email,
+        status: (result as any).status,
+        error: (result as any).error ?? null,
+      });
+      return {
+        status: "failed",
+        email: validatedData.email,
+        redirectTo,
+      };
     }
 
-    return { status: "success", email: validatedData.email };
+    console.info("[login action] credentials accepted", {
+      email: validatedData.email,
+      redirectTo,
+    });
+
+    return {
+      status: "success",
+      email: validatedData.email,
+      redirectTo,
+    };
   } catch (error) {
+    console.error("[login action] caught error", {
+      email,
+      error,
+    });
     if (error instanceof z.ZodError) {
-      return { status: "invalid_data", email };
+      console.warn("[login action] zod validation error in catch", {
+        email,
+        issues: error.issues,
+      });
+      return { status: "invalid_data", email, redirectTo };
     }
 
-    return { status: "failed", email };
+    console.error("[login action] unexpected failure", {
+      email,
+    });
+    return { status: "failed", email, redirectTo };
   }
 };
 

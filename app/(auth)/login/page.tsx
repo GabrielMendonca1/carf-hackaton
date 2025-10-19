@@ -2,8 +2,7 @@
 
 import Form from "next/form";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import {
   Suspense,
   useActionState,
@@ -27,6 +26,12 @@ import {
 
 import { type LoginActionState, login } from "../actions";
 
+const INITIAL_LOGIN_STATE: LoginActionState = {
+  status: "idle",
+  email: "",
+  redirectTo: "/",
+};
+
 export default function Page() {
   return (
     <Suspense fallback={null}>
@@ -36,29 +41,26 @@ export default function Page() {
 }
 
 function LoginPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get("redirectUrl");
-  const hasRedirectedRef = useRef(false);
-  const [isRedirecting, setIsRedirecting] = useState(false);
-  const [redirectTarget, setRedirectTarget] = useState<string | null>(null);
+  const redirectParam = searchParams.get("redirectUrl");
 
-  const [state, formAction, isPending] = useActionState<LoginActionState, FormData>(login, {
-    status: "idle",
-    email: "",
-  });
+  const [state = INITIAL_LOGIN_STATE, formAction, isPending] = useActionState<
+    LoginActionState,
+    FormData
+  >(login, INITIAL_LOGIN_STATE);
 
   const [email, setEmail] = useState(state.email);
 
   const status = state.status;
-
-  const { update: updateSession } = useSession();
+  const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
     setEmail(state.email);
   }, [state.email]);
 
   useEffect(() => {
+    console.info("[login page] status changed", { status });
+
     if (status === "failed") {
       toast({
         type: "error",
@@ -73,36 +75,8 @@ function LoginPage() {
   }, [status]);
 
   useEffect(() => {
-    if (!redirectUrl) {
-      setRedirectTarget(null);
-      return;
-    }
-
-    try {
-      const decodedRedirectUrl = decodeURIComponent(redirectUrl);
-      const url = new URL(decodedRedirectUrl, window.location.origin);
-      const isSameOrigin = url.origin === window.location.origin;
-      const hasFileExtension = /\.[^/]+$/.test(url.pathname);
-      const isAuthRoute =
-        url.pathname.startsWith("/login") || url.pathname.startsWith("/register");
-
-      if (isSameOrigin && !hasFileExtension && !isAuthRoute) {
-        setRedirectTarget(
-          `${url.pathname}${url.search}${url.hash}` || "/chat"
-        );
-        return;
-      }
-    } catch (error) {
-      console.error("Invalid redirectUrl provided:", error);
-    }
-
-    setRedirectTarget(null);
-  }, [redirectUrl]);
-
-  useEffect(() => {
     if (status !== "success") {
       hasRedirectedRef.current = false;
-      setIsRedirecting(false);
       return;
     }
 
@@ -111,29 +85,33 @@ function LoginPage() {
     }
 
     hasRedirectedRef.current = true;
-    setIsRedirecting(true);
 
-    void (async () => {
-      try {
-        await updateSession();
-      } catch (error) {
-        console.error("Failed to refresh session after login:", error);
-      }
+    const destination = state.redirectTo || "/";
+    console.info("[login page] redirecting after success", {
+      destination,
+    });
 
-      router.push(redirectTarget ?? "/chat");
-    })();
-  }, [status, updateSession, router, redirectTarget]);
+    if (typeof window !== "undefined") {
+      window.location.assign(destination);
+    }
+  }, [status, state.redirectTo]);
 
   const handleSubmit = useCallback(
     (formData: FormData) => {
+      console.info("[login page] submitting form");
       const emailValue = formData.get("email");
       setEmail(typeof emailValue === "string" ? emailValue : "");
+      if (redirectParam) {
+        formData.set("redirectUrl", redirectParam);
+      } else {
+        formData.delete("redirectUrl");
+      }
       return formAction(formData);
     },
-    [formAction]
+    [formAction, redirectParam]
   );
 
-  const isSubmitting = isPending || isRedirecting;
+  const isSubmitting = isPending;
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">

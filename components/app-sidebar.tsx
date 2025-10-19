@@ -48,14 +48,14 @@ export function AppSidebar({ user }: { user: User | undefined }) {
     });
 
     toast.promise(deletePromise, {
-      loading: "Deleting all chats...",
+      loading: "Excluindo todas as conversas...",
       success: () => {
         mutate(unstable_serialize(getChatHistoryPaginationKey));
         router.push("/");
         setShowDeleteAllDialog(false);
-        return "All chats deleted successfully";
+        return "Todas as conversas foram excluídas com sucesso";
       },
-      error: "Failed to delete all chats",
+      error: "Falha ao excluir todas as conversas",
     });
   };
 
@@ -73,7 +73,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 }}
               >
                 <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
-                  Chatbot
+                  Assistente
                 </span>
               </Link>
               <div className="flex flex-row gap-1">
@@ -90,7 +90,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent align="end" className="hidden md:block">
-                      Delete All Chats
+                      Excluir todas as conversas
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -110,7 +110,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent align="end" className="hidden md:block">
-                    New Chat
+                    Nova conversa
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -159,16 +159,16 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       <AlertDialog onOpenChange={setShowDeleteAllDialog} open={showDeleteAllDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete all chats?</AlertDialogTitle>
+            <AlertDialogTitle>Excluir todas as conversas?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete all your
-              chats and remove them from our servers.
+              Essa ação não pode ser desfeita. Isso excluirá permanentemente todas as
+              suas conversas e as removerá dos nossos servidores.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteAll}>
-              Delete All
+              Excluir tudo
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

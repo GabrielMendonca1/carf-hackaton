@@ -29,7 +29,7 @@ export function ChatHeader({ isReadonly }: { isReadonly: boolean }) {
           variant="outline"
         >
           <PlusIcon />
-          <span className="md:sr-only">New Chat</span>
+          <span className="md:sr-only">Nova conversa</span>
         </Button>
       )}
 

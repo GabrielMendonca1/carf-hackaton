@@ -74,7 +74,7 @@ export function AppHeader() {
           variant="outline"
         >
           <PlusIcon />
-          <span className="sr-only">New Chat</span>
+          <span className="sr-only">Nova conversa</span>
         </Button>
       </header>
       <div className="fixed bottom-4 right-4 z-30 md:hidden">
