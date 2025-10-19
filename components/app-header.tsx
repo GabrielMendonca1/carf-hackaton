@@ -2,11 +2,13 @@
 
 import { FileText, SearchSlashIcon, SparklesIcon, TrendingUp } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { SidebarToggle } from "@/components/sidebar-toggle";
+import { PlusIcon } from "./icons";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 
 export const navigationItems = [
   {
@@ -34,6 +36,7 @@ export const navigationItems = [
 
 export function AppHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -60,6 +63,20 @@ export function AppHeader() {
   }, [lastScrollY]);
   return (
     <>
+      <header className="sticky top-0 z-20 flex items-center gap-2 border-b bg-background px-2 py-1.5 md:hidden">
+        <SidebarToggle />
+        <Button
+          className="ml-auto h-8 px-2"
+          onClick={() => {
+            router.push("/");
+            router.refresh();
+          }}
+          variant="outline"
+        >
+          <PlusIcon />
+          <span className="sr-only">New Chat</span>
+        </Button>
+      </header>
       <div className="fixed bottom-4 right-4 z-30 md:hidden">
         <SidebarToggle className="h-12 w-12 rounded-full border bg-background/95 shadow-lg backdrop-blur" />
       </div>
