@@ -61,15 +61,23 @@ export function useChartConfig() {
   return context;
 }
 
+type TooltipItem = {
+  name: string;
+  value: number;
+  dataKey: string;
+  color?: string;
+  payload?: {
+    label?: string;
+    month?: string;
+    name?: string;
+    [key: string]: unknown;
+  };
+};
+
 interface ChartTooltipContentProps {
   active?: boolean;
   label?: string;
-  payload?: Array<{
-    name: string;
-    value: number;
-    dataKey: string;
-    color?: string;
-  }>;
+  payload?: TooltipItem[];
   className?: string;
 }
 
