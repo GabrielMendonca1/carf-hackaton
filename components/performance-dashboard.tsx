@@ -297,22 +297,6 @@ export function PerformanceDashboard() {
 
   return (
     <div className="space-y-8 pb-10">
-      <section className="space-y-3">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">
-              Painel de Performance
-            </h1>
-            <p className="text-muted-foreground">
-              Acompanhe produtividade, qualidade e pontos de atenção em tempo quase real.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Target className="h-4 w-4" />
-            Última atualização automática: 20/10/2024 às 08h12
-          </div>
-        </div>
-      </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpis.map((item) => {

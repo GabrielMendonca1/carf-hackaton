@@ -10,16 +10,19 @@ export const Greeting = () => {
       label: "Meus processos",
       href: "/processos",
       badge: 8,
+      color: "bg-green-100 text-green-600", 
     },
     {
       Icon: SearchSlashIcon,
       label: "Consultar processos",
       href: "/consultar",
+      color: "bg-blue-100 text-blue-600",
     },
     {
       Icon: TrendingUp,
       label: "Performance",
       href: "/performance",
+      color: "bg-yellow-100 text-yellow-600", 
     },
   ];
 
@@ -53,14 +56,14 @@ export const Greeting = () => {
         initial={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.8 }}
       >
-        {shortcuts.map(({ Icon, label, href, badge }) => (
+        {shortcuts.map(({ Icon, label, href, badge, color }) => (
           <Link
             className="flex min-w-[12rem] flex-1 flex-col items-start gap-3 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-transform duration-200 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300"
             key={label}
             href={href}
           >
             <div className="flex w-full items-center justify-between">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
+              <div className={`flex size-10 items-center justify-center rounded-xl ${color}`}>
                 <Icon className="size-5" />
               </div>
               {badge && (

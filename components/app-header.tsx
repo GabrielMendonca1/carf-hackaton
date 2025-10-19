@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, SearchSlashIcon, TrendingUp } from "lucide-react";
+import { FileText, SearchSlashIcon, TrendingUp, SparklesIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -9,6 +9,11 @@ import { SidebarToggle } from "@/components/sidebar-toggle";
 import { Badge } from "./ui/badge";
 
 const navigationItems = [
+  {
+    icon: SparklesIcon,
+    label: "Agente CARF",
+    href: "/",
+  },
   {
     icon: FileText,
     label: "Meus processos",

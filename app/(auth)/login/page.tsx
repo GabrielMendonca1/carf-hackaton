@@ -117,7 +117,7 @@ function LoginPage() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">
       <div className={cn("w-full max-w-3xl flex flex-col gap-6")}>
-        <Card className="overflow-hidden p-0">
+        <Card className="overflow-hidden p-3">
           <CardContent className="grid p-0 md:grid-cols-2">
             <Form action={handleSubmit} className="p-6 md:p-8">
               <FieldGroup>
@@ -182,9 +182,9 @@ function LoginPage() {
             {/* Imagem lateral visível apenas em telas médias+ */}
             <div className="bg-muted relative hidden md:block">
               <img
-                src="/placeholder.svg"
-                alt="Image"
-                className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+                src="/images/carf.png"
+                alt="Ilustração do CARF"
+                className="absolute inset-0 h-full w-full object-fill dark:brightness-[0.2] dark:grayscale"
               />
             </div>
           </CardContent>

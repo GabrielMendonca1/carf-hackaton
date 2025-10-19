@@ -191,7 +191,7 @@ function PureMultimodalInput({
       const { error } = await response.json();
       toast.error(error);
     } catch (_error) {
-      toast.error("Failed to upload file, please try again!");
+      toast.error("Falha ao enviar o arquivo, tente novamente!");
     }
   }, []);
 
@@ -224,7 +224,7 @@ function PureMultimodalInput({
           ...successfullyUploadedAttachments,
         ]);
       } catch (error) {
-        console.error("Error uploading files!", error);
+        console.error("Erro ao enviar arquivos!", error);
       } finally {
         setUploadQueue([]);
       }
@@ -258,7 +258,7 @@ function PureMultimodalInput({
         onSubmit={(event) => {
           event.preventDefault();
           if (status !== "ready") {
-            toast.error("Please wait for the model to finish its response!");
+            toast.error("Aguarde o modelo finalizar a resposta!");
           } else {
             submitForm();
           }
@@ -306,7 +306,7 @@ function PureMultimodalInput({
             maxHeight={200}
             minHeight={44}
             onChange={handleInput}
-            placeholder="Send a message..."
+            placeholder="Envie uma mensagem..."
             ref={textareaRef}
             rows={1}
             value={input}
