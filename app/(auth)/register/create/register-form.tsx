@@ -50,7 +50,7 @@ export default function RegisterForm({
           console.error("Falha ao limpar flag de onboarding:", error);
         }
         await updateSession();
-        router.push("/chat");
+        router.push("/");
       })();
     }
   }, [state.status, updateSession, router]);

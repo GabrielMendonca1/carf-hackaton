@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import type { Processo } from "@/lib/types/processo";
 import { cn } from "@/lib/utils";
 import {
@@ -174,9 +174,8 @@ export function ConsultarTable({
                     : "text-green-600";
 
               return (
-                <>
+                <Fragment key={processo.id}>
                   <tr
-                    key={processo.id}
                     className={cn(
                       "hover:bg-muted/30 transition-all cursor-pointer group",
                       isExpanded && "bg-muted/20",
@@ -434,7 +433,7 @@ export function ConsultarTable({
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               );
             })}
           </tbody>

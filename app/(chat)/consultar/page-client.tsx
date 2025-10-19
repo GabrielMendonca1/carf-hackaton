@@ -5,7 +5,7 @@ import { AppHeader } from "@/components/app-header";
 import { ConsultarFilters, type ConsultarFiltersState } from "@/components/consultar-filters";
 import { ConsultarTable } from "@/components/consultar-table";
 import { WorkloadDashboard } from "@/components/workload-dashboard";
-import { AIInsightsPanel } from "@/components/ai-insights-panel";
+import { AIInsightsSheet } from "@/components/ai-insights-sheet";
 import { DashboardSkeleton } from "@/components/dashboard-skeleton";
 import { TableSkeleton } from "@/components/table-skeleton";
 import { EmptyState } from "@/components/empty-state";
@@ -27,7 +27,7 @@ export function ConsultarPageClient() {
   });
 
   const [viewMode, setViewMode] = useState<"dashboard" | "table">("dashboard");
-  const [showInsights, setShowInsights] = useState(true);
+  const [showInsights, setShowInsights] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [compactMode, setCompactMode] = useState(false);
@@ -119,41 +119,8 @@ export function ConsultarPageClient() {
       <AppHeader />
 
       <main className="flex-1 overflow-auto">
-        <div className="container max-w-[1800px] mx-auto py-6 px-4 md:px-6 lg:px-8">
+        <div className="container max-w-7xl mx-auto py-6 px-4 md:px-6 lg:px-8">
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                  Consultar Processos
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                  Visão panorâmica de todos os processos em andamento no CARF
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 hover:bg-primary hover:text-primary-foreground transition-all"
-                  onClick={handleRefresh}
-                  disabled={isRefreshing}
-                >
-                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
-                  <span className="hidden sm:inline">Atualizar</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 hover:bg-primary hover:text-primary-foreground transition-all"
-                  onClick={handleExport}
-                >
-                  <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline">Exportar</span>
-                </Button>
-              </div>
-            </div>
-
             <ConsultarFilters
               filters={filters}
               onFiltersChange={setFilters}
@@ -210,76 +177,100 @@ export function ConsultarPageClient() {
                     <span className="hidden sm:inline">{compactMode ? "Expandir" : "Compacto"}</span>
                   </Button>
                 )}
+                <div className="relative">
+                  <Button
+                    variant={showInsights ? "default" : "outline"}
+                    size="sm"
+                    className="gap-2 transition-all hover:scale-105"
+                    onClick={() => setShowInsights(!showInsights)}
+                  >
+                    <Brain className="h-4 w-4" />
+                    <span className="hidden sm:inline">Insights IA</span>
+                  </Button>
+                  {!showInsights && (
+                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                    </span>
+                  )}
+                </div>
+                <div className="h-4 w-px bg-border mx-1" />
                 <Button
-                  variant={showInsights ? "default" : "outline"}
+                  variant="outline"
                   size="sm"
-                  className="gap-2 transition-all hover:scale-105"
-                  onClick={() => setShowInsights(!showInsights)}
+                  className="gap-2 hover:bg-primary hover:text-primary-foreground transition-all"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
                 >
-                  <Brain className="h-4 w-4" />
-                  <span className="hidden sm:inline">Insights IA</span>
+                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                  <span className="hidden sm:inline">Atualizar</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 hover:bg-primary hover:text-primary-foreground transition-all"
+                  onClick={handleExport}
+                >
+                  <Download className="h-4 w-4" />
+                  <span className="hidden sm:inline">Exportar</span>
                 </Button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
-              <div className="space-y-6">
-                {isLoading ? (
-                  viewMode === "dashboard" ? (
-                    <DashboardSkeleton />
-                  ) : (
-                    <TableSkeleton />
-                  )
-                ) : filteredProcessos.length === 0 ? (
-                  <EmptyState
-                    icon={FileSearch}
-                    title="Nenhum processo encontrado"
-                    description={
-                      filters.search ||
-                      filters.temas.length > 0 ||
-                      filters.status !== "todos" ||
-                      filters.complexidade !== "todos" ||
-                      filters.situacao !== "todos" ||
-                      filters.turma !== "todos"
-                        ? "Tente ajustar os filtros para encontrar o que procura. Use a busca ou remova alguns filtros ativos."
-                        : "Não há processos cadastrados no sistema no momento."
-                    }
-                    actionLabel="Limpar Filtros"
-                    onAction={() =>
-                      setFilters({
-                        search: "",
-                        temas: [],
-                        status: "todos",
-                        complexidade: "todos",
-                        situacao: "todos",
-                        turma: "todos",
-                        disponibilidadeServidor: "todos",
-                      })
-                    }
-                  />
+            {isLoading ? (
+              viewMode === "dashboard" ? (
+                <DashboardSkeleton />
+              ) : (
+                <TableSkeleton />
+              )
+            ) : filteredProcessos.length === 0 ? (
+              <EmptyState
+                icon={FileSearch}
+                title="Nenhum processo encontrado"
+                description={
+                  filters.search ||
+                  filters.temas.length > 0 ||
+                  filters.status !== "todos" ||
+                  filters.complexidade !== "todos" ||
+                  filters.situacao !== "todos" ||
+                  filters.turma !== "todos"
+                    ? "Tente ajustar os filtros para encontrar o que procura. Use a busca ou remova alguns filtros ativos."
+                    : "Não há processos cadastrados no sistema no momento."
+                }
+                actionLabel="Limpar Filtros"
+                onAction={() =>
+                  setFilters({
+                    search: "",
+                    temas: [],
+                    status: "todos",
+                    complexidade: "todos",
+                    situacao: "todos",
+                    turma: "todos",
+                    disponibilidadeServidor: "todos",
+                  })
+                }
+              />
+            ) : (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                {viewMode === "dashboard" ? (
+                  <WorkloadDashboard processos={filteredProcessos} />
                 ) : (
-                  <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    {viewMode === "dashboard" ? (
-                      <WorkloadDashboard processos={filteredProcessos} />
-                    ) : (
-                      <ConsultarTable
-                        processos={filteredProcessos}
-                        compactMode={compactMode}
-                        onProcessoClick={(processo) => {
-                          toast.info(`Abrindo detalhes do processo ${processo.numeroProcesso}`);
-                        }}
-                      />
-                    )}
-                  </div>
+                  <ConsultarTable
+                    processos={filteredProcessos}
+                    compactMode={compactMode}
+                    onProcessoClick={(processo) => {
+                      toast.info(`Abrindo detalhes do processo ${processo.numeroProcesso}`);
+                    }}
+                  />
                 )}
               </div>
+            )}
 
-              {showInsights && (
-                <div className="lg:sticky lg:top-6 lg:self-start animate-in slide-in-from-right duration-500">
-                  <AIInsightsPanel processos={filteredProcessos} />
-                </div>
-              )}
-            </div>
+            <AIInsightsSheet
+              processos={filteredProcessos}
+              open={showInsights}
+              onOpenChange={setShowInsights}
+            />
           </div>
         </div>
       </main>

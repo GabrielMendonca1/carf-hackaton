@@ -4,7 +4,7 @@ import { Skeleton } from "./ui/skeleton";
 export function DashboardSkeleton() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[...Array(4)].map((_, i) => (
           <Card key={i} className="border-l-4 border-l-muted">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
