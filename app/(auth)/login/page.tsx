@@ -43,25 +43,30 @@ function LoginPage() {
   const hasRedirectedRef = useRef(false);
   const [redirectTarget, setRedirectTarget] = useState<string | null>(null);
 
-  const [state, formAction] = useActionState<LoginActionState, FormData>(login, {
+  const [state, formAction] = useActionState<
+    LoginActionState | undefined,
+    FormData
+  >(login, {
     status: "idle",
   });
+
+  const status = state?.status ?? "idle";
 
   const { update: updateSession } = useSession();
 
   useEffect(() => {
-    if (state.status === "failed") {
+    if (status === "failed") {
       toast({
         type: "error",
         description: "Credenciais inválidas. Verifique e tente novamente.",
       });
-    } else if (state.status === "invalid_data") {
+    } else if (status === "invalid_data") {
       toast({
         type: "error",
         description: "Verifique os dados informados e tente novamente.",
       });
     }
-  }, [state.status]);
+  }, [status]);
 
   useEffect(() => {
     if (!redirectUrl) {
@@ -91,9 +96,10 @@ function LoginPage() {
   }, [redirectUrl]);
 
   useEffect(() => {
-    if (state.status !== "success" || hasRedirectedRef.current) {
-      if (state.status !== "success") {
+    if (status !== "success" || hasRedirectedRef.current) {
+      if (status !== "success") {
         hasRedirectedRef.current = false;
+        setIsSuccessful(false);
       }
       return;
     }
@@ -107,7 +113,7 @@ function LoginPage() {
       const destination = redirectTarget ?? "/chat";
       router.push(destination);
     })();
-  }, [state.status, updateSession, router, redirectTarget]);
+  }, [status, updateSession, router, redirectTarget]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);

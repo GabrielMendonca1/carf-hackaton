@@ -24,7 +24,7 @@ export type LoginActionState = {
 };
 
 export const login = async (
-  _: LoginActionState,
+  _: LoginActionState | undefined,
   formData: FormData
 ): Promise<LoginActionState> => {
   try {
@@ -33,11 +33,15 @@ export const login = async (
       password: formData.get("password"),
     });
 
-    await signIn("credentials", {
+    const result = await signIn("credentials", {
       email: validatedData.email,
       password: validatedData.password,
       redirect: false,
     });
+
+    if (!result?.ok) {
+      return { status: "failed" };
+    }
 
     return { status: "success" };
   } catch (error) {
